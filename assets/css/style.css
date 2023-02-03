@@ -4,16 +4,15 @@
     margin: 0;
 }
 
-p {
-    padding: 5px;
-}
-
-/** https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_dropdown_navbar **/
+/** Main CSS **/
 body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/** Main CSS **/
+h1, h2, p {
+    padding: 8px;
+}
+
 .ribbon {
     height: 12px;
     background-color: #1E261F;
@@ -22,7 +21,14 @@ body {
 #content {
     background-color: #FFF;
     margin: 20px auto;
+    padding: 10px;
     max-width: 1200px;
+}
+
+#teaching-statement-bg {
+    background-color: rgb(128, 128, 128, 0.15);
+    padding: 10px;
+    font-family: 'Pill Gothic';
 }
 
 #footer{
@@ -43,7 +49,7 @@ body {
 #footer p a:hover 
 {
     color: lightgrey;
-    transition: all 0.1s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 
 /** Helper CSS **/
