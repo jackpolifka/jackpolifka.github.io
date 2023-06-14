@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Future Traffic Flow Simulator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.js"
+        integrity="sha512-rsntMCBgWYEWKl4HtqWmQ3vdHgvSq8CTtJd19YL7lCtKokLPWt7UEoHVabK1uiNfUdaLit8O090no5BZjcz+bw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        .float-right {
+            float: right;
+        }
+
+        .float-end {
+            clear: both;
+        }
+
+        #simulator-track {
+            background-image: url('assets/img/track.png');
+            padding: 0px;
+            height: 600px;
+        }
+
+        .grass {
+            background-color: green;
+            height: 20px
+        }
+
+        /* .square,
+        .circle {
+            pointer-events: none;
+            position: relative;
+            width: 28px;
+            height: 28px;
+            margin: 1px;
+            background-color: purple;
+            font-size: 14px;
+        } */
+
+        .underline {
+            text-decoration: underline;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-6">
+                <h1>Future Traffic Flow Simulator</h1>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                    eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+                    ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+                    aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit
+                    in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui
+                    officia deserunt mollit anim id est laborum.</p>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-4 text-center mb-2">
+                <button type="button" id="add-regular-vehicle" class="btn btn-primary btn-lg">
+                    <p>Add Regular Vehicle</p>
+                    <p>
+                        <u>Speed</u>:
+                        <select class="speed">
+                            <option>15 mph</option>
+                            <option>30 mph</option>
+                            <option>45 mph</option>
+                            <option>60 mph</option>
+                            <option>75 mph</option>
+                            <option>90 mph</option>
+                            <option>105 mph</option>
+                        </select>
+                    </p>
+                </button>
+            </div>
+            <div class="col-md-4 text-center">
+                <button type="button" id="add-autonomous-vehicle" class="btn btn-primary btn-lg">
+                    <p>Add Autonomous Vehicle</p>
+                    <p>
+                        <u>Speed</u>:
+                        <select class="speed">
+                            <option>15 mph</option>
+                            <option>30 mph</option>
+                            <option>45 mph</option>
+                            <option>60 mph</option>
+                            <option>75 mph</option>
+                            <option>90 mph</option>
+                            <option>105 mph</option>
+                        </select>
+                    </p>
+                </button>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="underline">Start</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div id='simulator-track' class="col-md-12">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="float-right underline">Finish</h2>
+            </div>
+            <div class="float-end"></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const engine = Matter.Engine.create();
+            engine.gravity.y = 0; // top-down view
+            const simulatorTrackSettings = {
+                height: 600,
+                width: 1320,
+                background: 'transparent', // Needed to use background-image CSS rule
+                wireframes: false // Needed to use background-image CSS rule
+            };
+            // Create canvas for simulator track
+            const render = Matter.Render.create({
+                element: document.getElementById('simulator-track'),
+                engine: engine,
+                options: {
+                    height: simulatorTrackSettings.height,
+                    width: simulatorTrackSettings.width,
+                    background: simulatorTrackSettings.background,
+                    wireframes: simulatorTrackSettings.wireframes,
+                }
+            });
+
+            // Add invisible barriers at the end of the first and second lap
+            Matter.Composite.add(
+                engine.world,
+                [
+                    Matter.Bodies.rectangle(
+                        simulatorTrackSettings.width,
+                        10,
+                        10,
+                        (simulatorTrackSettings.height * 2 - 10) / 3,
+                        {
+                            isStatic: true, label: 'first-lap', render: { visible: true },
+
+                        }
+                    ),
+                    Matter.Bodies.rectangle(
+                        simulatorTrackSettings.width,
+                        ((simulatorTrackSettings.height - 10) / 2),
+                        10,
+                        simulatorTrackSettings.height / 3,
+                        { isStatic: true, label: 'second-lap', render: { visible: true } }
+                    ),
+                ]
+            );
+
+            class Vehicle {
+                constructor(options = {}) {
+                    this._options = options;
+                    this._body = this._buildNewVehicle();
+                }
+                getBody() { return this._body; }
+                _buildNewVehicle() {
+                    let lane = this._getStartingLane();
+                    return Matter.Bodies.rectangle(
+                        20, // starting `x` vector
+                        lane === 0 ? 45 : 135, // starting `y` vector
+                        28, // height
+                        28, // width
+                        {
+                            label: 'vehicle',
+                            lane: lane,
+                            render: { fillStyle: this._options.color },
+                            velocity: { x: this._getSpeed(this._options.speed), y: 0 },
+                            inertia: 'Infinity',
+                            friction: 0,
+                            frictionAir: 0,
+                            frictionStatic: 0,
+                            isStatic: false
+                        }
+                    );
+                }
+                _getStartingLane() {
+                    return Math.random() > 0.5 ? 0 : 1; // coin flip for starting lane
+                }
+                _getSpeed() {
+                    let speed = 0;
+                    switch (this._options.speed) {
+                        case 15:
+                            speed = 2;
+                            break;
+                        case 30:
+                            speed = 2.5;
+                            break;
+                        case 45:
+                            speed = 3;
+                            break;
+                        case 60:
+                            speed = 3.5;
+                            break;
+                        case 75:
+                            speed = 4;
+                            break;
+                        case 90:
+                            speed = 4.5;
+                            break;
+                        case 105:
+                            speed = 5;
+                            break;
+                        default:
+                            console.error(this._options.speed + ' given as mph. One of the following values was excepted (15, 30, 45, 60, 75, 90, or 105).')
+                    }
+                    return speed;
+                }
+            }
+
+
+            let vehicles = [];
+
+            document.getElementById('add-regular-vehicle').addEventListener('click', (e) => {
+                if (e.target.id === 'add-regular-vehicle') {
+                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
+                        newVehicle = new Vehicle({ color: 'blue', speed: parseInt(document.querySelector(HTMLquery).value) });
+                    Matter.Composite.add(engine.world, newVehicle.getBody());
+                    Matter.Events.on(engine, 'beforeUpdate', () => {
+                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
+                    });
+                }
+            });
+
+            document.getElementById('add-autonomous-vehicle').addEventListener('click', (e) => {
+                if (e.target.id === 'add-autonomous-vehicle') {
+                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
+                        newVehicle = new Vehicle({ color: 'red', speed: parseInt(document.querySelector(HTMLquery).value) });
+                    Matter.Composite.add(engine.world, newVehicle.getBody());
+                    Matter.Events.on(engine, 'beforeUpdate', () => {
+                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
+                    });
+                }
+            });
+
+            // Collusion detction rules
+            Matter.Events.on(engine, 'collisionStart', (event) => {
+                let pairs = event.pairs;
+                const updateLanePosition = (vehicleBody, lapStartingPosition) => {
+                    console.log(vehicleBody, lapStartingPosition);
+                    Matter.Body.setPosition(vehicleBody, lapStartingPosition);
+                    // ** HACK ** After collusion, previous `beforeUpdate` event doesn't run?!
+                    // Source: https://github.com/liabru/matter-js/issues/256
+                    for (let i = 0; i < 1000 / 60; i++) {
+                        Matter.Engine.update(engine, 1);
+                    }
+                };
+                for (const pair of pairs) {
+                    console.log(pair.bodyA.label, pair.bodyB.label);
+                    if (pair.bodyA.label === 'vehicle' && pair.bodyB.label === 'first-lap') {
+                        let secondLapStartPosition = { x: 20, y: 255 };
+                        if (pair.bodyA.lane === 1) {
+                            secondLapStartPosition = { x: 20, y: 345 };
+                        }
+                        updateLanePosition(pair.bodyA, secondLapStartPosition);
+                    } else if (pair.bodyA.label === 'first-lap' && pair.bodyB.label === 'vehicle') {
+                        let secondLapStartPosition = { x: 20, y: 255 };
+                        if (pair.bodyB.lane === 1) {
+                            secondLapStartPosition = { x: 20, y: 345 };
+                        }
+                        updateLanePosition(pair.bodyB, secondLapStartPosition);
+                    } else if (pair.bodyA.label === 'vehicle' && pair.bodyB.label === 'second-lap') {
+                        let thirdLapStartPosition = { x: 20, y: 465 };
+                        if (pair.bodyA.lane === 1) {
+                            thirdLapStartPosition = { x: 20, y: 555 };
+                        }
+                        updateLanePosition(pair.bodyA, thirdLapStartPosition);
+                    } else if (pair.bodyA.label === 'second-lap' && pair.bodyB.label === 'vehicle') {
+                        let thirdLapStartPosition = { x: 20, y: 465 };
+                        if (pair.bodyB.lane === 1) {
+                            thirdLapStartPosition = { x: 20, y: 555 };
+                        }
+                        updateLanePosition(pair.bodyB, thirdLapStartPosition);
+                    }
+                }
+            })
+
+            // start simulaton loop
+            Matter.Render.run(render);
+            Matter.Runner.run(Matter.Runner.create(), engine);
+        });
+    </script>
+</body>
+
+</html>
