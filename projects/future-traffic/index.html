@@ -159,7 +159,7 @@
                         10,
                         (simulatorTrackSettings.height * 2 - 10) / 3,
                         {
-                            isStatic: true, label: 'first-lap', render: { visible: true },
+                            isStatic: true, label: 'first-lap', render: { visible: false },
 
                         }
                     ),
@@ -168,7 +168,7 @@
                         ((simulatorTrackSettings.height - 10) / 2),
                         10,
                         simulatorTrackSettings.height / 3,
-                        { isStatic: true, label: 'second-lap', render: { visible: true } }
+                        { isStatic: true, label: 'second-lap', render: { visible: false } }
                     ),
                 ]
             );
@@ -180,16 +180,20 @@
                 }
                 getBody() { return this._body; }
                 _buildNewVehicle() {
-                    let lane = this._getStartingLane();
+                    let lane = this._getStartingLane(),
+                        image = 'assets/img/' + this._options.color + '-car.png'
                     return Matter.Bodies.rectangle(
-                        20, // starting `x` vector
+                        -40, // starting `x` vector
                         lane === 0 ? 45 : 135, // starting `y` vector
-                        28, // height
-                        28, // width
+                        45, // height
+                        82, // width
                         {
                             label: 'vehicle',
                             lane: lane,
-                            render: { fillStyle: this._options.color },
+                            render: { 
+                                fillStyle: this._options.color, 
+                                sprite: { texture: image } 
+                            },
                             velocity: { x: this._getSpeed(this._options.speed), y: 0 },
                             inertia: 'Infinity',
                             friction: 0,
@@ -233,13 +237,10 @@
                 }
             }
 
-
-            let vehicles = [];
-
             document.getElementById('add-regular-vehicle').addEventListener('click', (e) => {
                 if (e.target.id === 'add-regular-vehicle') {
                     let HTMLquery = '#' + e.target.id + ' .speed option:checked',
-                        newVehicle = new Vehicle({ color: 'blue', speed: parseInt(document.querySelector(HTMLquery).value) });
+                        newVehicle = new Vehicle({ color: 'pink', speed: parseInt(document.querySelector(HTMLquery).value) });
                     Matter.Composite.add(engine.world, newVehicle.getBody());
                     Matter.Events.on(engine, 'beforeUpdate', () => {
                         Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
@@ -250,7 +251,7 @@
             document.getElementById('add-autonomous-vehicle').addEventListener('click', (e) => {
                 if (e.target.id === 'add-autonomous-vehicle') {
                     let HTMLquery = '#' + e.target.id + ' .speed option:checked',
-                        newVehicle = new Vehicle({ color: 'red', speed: parseInt(document.querySelector(HTMLquery).value) });
+                        newVehicle = new Vehicle({ color: 'white', speed: parseInt(document.querySelector(HTMLquery).value) });
                     Matter.Composite.add(engine.world, newVehicle.getBody());
                     Matter.Events.on(engine, 'beforeUpdate', () => {
                         Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
