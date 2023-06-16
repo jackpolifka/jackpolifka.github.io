@@ -28,24 +28,46 @@
             height: 600px;
         }
 
-        .grass {
-            background-color: green;
-            height: 20px
-        }
-
-        /* .square,
-        .circle {
-            pointer-events: none;
-            position: relative;
-            width: 28px;
-            height: 28px;
-            margin: 1px;
-            background-color: purple;
-            font-size: 14px;
-        } */
-
         .underline {
             text-decoration: underline;
+        }
+
+        .btn-pink {
+            color: #FFC0CB;
+            background-color: #8e404d;
+            border-color: #8e5d66
+        }
+
+        .btn-pink:hover {
+            color: #FFC0CB;
+            background-color: #c39aa1;
+            border-color: #8e5d66
+        }
+
+        .btn-pink.disabled,
+        .btn-pink:disabled {
+            color: #FFC0CB;
+            background-color: #c4a9ae;
+            border-color: #8e5d66
+        }
+
+        .btn-white {
+            color: #000;
+            background-color: #cbcfcf;
+            border-color: #757373
+        }
+
+        .btn-white:hover {
+            color: #000;
+            background-color: #e9f2f2;
+            border-color: #757373
+        }
+
+        .btn-white.disabled,
+        .btn-white:disabled {
+            color: #000;
+            background-color: #e9f2f2;
+            border-color: #757373
         }
     </style>
 
@@ -76,7 +98,7 @@
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-4 text-center mb-2">
-                <button type="button" id="add-regular-vehicle" class="btn btn-primary btn-lg">
+                <button type="button" id="add-regular-vehicle" class="btn btn-pink btn-lg">
                     <p>Add Regular Vehicle</p>
                     <p>
                         <u>Speed</u>:
@@ -93,7 +115,7 @@
                 </button>
             </div>
             <div class="col-md-4 text-center">
-                <button type="button" id="add-autonomous-vehicle" class="btn btn-primary btn-lg">
+                <button type="button" id="add-autonomous-vehicle" class="btn btn-white btn-lg">
                     <p>Add Autonomous Vehicle</p>
                     <p>
                         <u>Speed</u>:
@@ -154,7 +176,7 @@
                 engine.world,
                 [
                     Matter.Bodies.rectangle(
-                        simulatorTrackSettings.width,
+                        simulatorTrackSettings.width + 60,
                         10,
                         10,
                         (simulatorTrackSettings.height * 2 - 10) / 3,
@@ -164,11 +186,18 @@
                         }
                     ),
                     Matter.Bodies.rectangle(
-                        simulatorTrackSettings.width,
-                        ((simulatorTrackSettings.height - 10) / 2),
+                        simulatorTrackSettings.width + 60,
+                        300,
                         10,
                         simulatorTrackSettings.height / 3,
                         { isStatic: true, label: 'second-lap', render: { visible: false } }
+                    ),
+                    Matter.Bodies.rectangle(
+                        simulatorTrackSettings.width + 60,
+                        500,
+                        10,
+                        simulatorTrackSettings.height / 3,
+                        { isStatic: true, label: 'third-lap', render: { visible: false } }
                     ),
                 ]
             );
@@ -178,33 +207,40 @@
                     this._options = options;
                     this._body = this._buildNewVehicle();
                 }
+                static AUTONOMOUS = 'autonomous';
+                static REGULAR = 'regular';
+                static getTypes() {
+                    return [
+                        this.AUTONOMOUS,
+                        this.REGULAR
+                    ];
+                }
                 getBody() { return this._body; }
                 _buildNewVehicle() {
                     let lane = this._getStartingLane(),
                         image = 'assets/img/' + this._options.color + '-car.png'
                     return Matter.Bodies.rectangle(
-                        -40, // starting `x` vector
+                        -40,                   // starting `x` vector
                         lane === 0 ? 45 : 135, // starting `y` vector
-                        45, // height
-                        82, // width
+                        this._options.width,   // width
+                        45,                    // height
                         {
-                            label: 'vehicle',
+                            label: this._options.type,
                             lane: lane,
-                            render: { 
-                                fillStyle: this._options.color, 
-                                sprite: { texture: image } 
+                            render: {
+                                fillStyle: this._options.color,
+                                sprite: { texture: image }
                             },
                             velocity: { x: this._getSpeed(this._options.speed), y: 0 },
                             inertia: 'Infinity',
                             friction: 0,
                             frictionAir: 0,
-                            frictionStatic: 0,
-                            isStatic: false
+                            frictionStatic: 0
                         }
                     );
                 }
                 _getStartingLane() {
-                    return Math.random() > 0.5 ? 0 : 1; // coin flip for starting lane
+                    return (Math.floor(Math.random() * 2) === 0) ? 0 : 1; // coin flip for starting lane
                 }
                 _getSpeed() {
                     let speed = 0;
@@ -237,28 +273,6 @@
                 }
             }
 
-            document.getElementById('add-regular-vehicle').addEventListener('click', (e) => {
-                if (e.target.id === 'add-regular-vehicle') {
-                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
-                        newVehicle = new Vehicle({ color: 'pink', speed: parseInt(document.querySelector(HTMLquery).value) });
-                    Matter.Composite.add(engine.world, newVehicle.getBody());
-                    Matter.Events.on(engine, 'beforeUpdate', () => {
-                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
-                    });
-                }
-            });
-
-            document.getElementById('add-autonomous-vehicle').addEventListener('click', (e) => {
-                if (e.target.id === 'add-autonomous-vehicle') {
-                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
-                        newVehicle = new Vehicle({ color: 'white', speed: parseInt(document.querySelector(HTMLquery).value) });
-                    Matter.Composite.add(engine.world, newVehicle.getBody());
-                    Matter.Events.on(engine, 'beforeUpdate', () => {
-                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
-                    });
-                }
-            });
-
             // Collusion detction rules
             Matter.Events.on(engine, 'collisionStart', (event) => {
                 let pairs = event.pairs;
@@ -271,39 +285,83 @@
                         Matter.Engine.update(engine, 1);
                     }
                 };
+                const updateVelocity = (vehicleBody, velocity) => {
+                    Matter.Body.setVelocity(vehicleBody, { x: 1, y: 0 });
+                    setTimeout(() => { Matter.Body.setVelocity(vehicleBody, velocity); }, 500);
+                    // ** HACK ** After collusion, previous `beforeUpdate` event doesn't run?!
+                    // Source: https://github.com/liabru/matter-js/issues/256
+                    for (let i = 0; i < 1000 / 60; i++) {
+                        Matter.Engine.update(engine, 1);
+                    }
+                };
                 for (const pair of pairs) {
                     console.log(pair.bodyA.label, pair.bodyB.label);
-                    if (pair.bodyA.label === 'vehicle' && pair.bodyB.label === 'first-lap') {
-                        let secondLapStartPosition = { x: 20, y: 255 };
-                        if (pair.bodyA.lane === 1) {
-                            secondLapStartPosition = { x: 20, y: 345 };
-                        }
-                        updateLanePosition(pair.bodyA, secondLapStartPosition);
-                    } else if (pair.bodyA.label === 'first-lap' && pair.bodyB.label === 'vehicle') {
-                        let secondLapStartPosition = { x: 20, y: 255 };
+                    // REGULAR hits anything in the back
+                    if (Vehicle.getTypes().includes(pair.bodyA.label) && pair.bodyB.label === Vehicle.AUTONOMOUS) {
+                        console.log(2);
+                        updateVelocity(pair.bodyB, pair.bodyA.velocity, 500);
+                        // Collusion rules for completing a lap
+                        // first lap
+                    } else if (pair.bodyA.label === 'first-lap' && Vehicle.getTypes().includes(pair.bodyB.label)) {
+                        let secondLapStartPosition = { x: -40, y: 255 };
                         if (pair.bodyB.lane === 1) {
-                            secondLapStartPosition = { x: 20, y: 345 };
+                            secondLapStartPosition = { x: -40, y: 345 };
                         }
                         updateLanePosition(pair.bodyB, secondLapStartPosition);
-                    } else if (pair.bodyA.label === 'vehicle' && pair.bodyB.label === 'second-lap') {
-                        let thirdLapStartPosition = { x: 20, y: 465 };
-                        if (pair.bodyA.lane === 1) {
-                            thirdLapStartPosition = { x: 20, y: 555 };
-                        }
-                        updateLanePosition(pair.bodyA, thirdLapStartPosition);
-                    } else if (pair.bodyA.label === 'second-lap' && pair.bodyB.label === 'vehicle') {
-                        let thirdLapStartPosition = { x: 20, y: 465 };
+                        // second lap
+                    } else if (pair.bodyA.label === 'second-lap' && Vehicle.getTypes().includes(pair.bodyB.label)) {
+                        let thirdLapStartPosition = { x: -40, y: 465 };
                         if (pair.bodyB.lane === 1) {
-                            thirdLapStartPosition = { x: 20, y: 555 };
+                            thirdLapStartPosition = { x: -40, y: 555 };
                         }
                         updateLanePosition(pair.bodyB, thirdLapStartPosition);
+                        // third lap
+                    } else if (pair.bodyA.label === 'third-lap' && Vehicle.getTypes().includes(pair.bodyB.label)) {
+                        Matter.Composite.remove(engine.world, pair.bodyB);
                     }
                 }
             })
 
-            // start simulaton loop
+            // start simulation loop
             Matter.Render.run(render);
             Matter.Runner.run(Matter.Runner.create(), engine);
+
+            // initalize interface
+            document.getElementById('add-regular-vehicle').addEventListener('click', (e) => {
+                if (e.target.id === 'add-regular-vehicle') {
+                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
+                        newVehicle = new Vehicle({
+                            type: Vehicle.REGULAR,
+                            color: 'pink',
+                            speed: parseInt(document.querySelector(HTMLquery).value),
+                            width: 82
+                        });
+                    Matter.Composite.add(engine.world, newVehicle.getBody());
+                    Matter.Events.on(engine, 'beforeUpdate', () => {
+                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
+                    });
+                    document.getElementById('add-regular-vehicle').disabled = true;
+                    setTimeout(() => { document.getElementById('add-regular-vehicle').disabled = false; }, 500);
+                }
+            });
+
+            document.getElementById('add-autonomous-vehicle').addEventListener('click', (e) => {
+                if (e.target.id === 'add-autonomous-vehicle') {
+                    let HTMLquery = '#' + e.target.id + ' .speed option:checked',
+                        newVehicle = new Vehicle({
+                            type: Vehicle.AUTONOMOUS,
+                            color: 'white',
+                            speed: parseInt(document.querySelector(HTMLquery).value),
+                            width: 150
+                        }); Matter.Composite.add(engine.world, newVehicle.getBody());
+                    Matter.Events.on(engine, 'beforeUpdate', () => {
+                        Matter.Body.setVelocity(newVehicle.getBody(), newVehicle.getBody().velocity);
+                    });
+                    document.getElementById('add-autonomous-vehicle').disabled = true;
+                    setTimeout(() => { document.getElementById('add-autonomous-vehicle').disabled = false; }, 500);
+                }
+            });
+
         });
     </script>
 </body>
