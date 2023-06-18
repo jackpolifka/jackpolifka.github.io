@@ -85,8 +85,9 @@
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-8">
-                <p><b>Directions</b>: Using the below buttons, please try adding a mixture of regular and autonomous 
-                    vehicles at different speeds in order to see how the flow of traffic changes.</p>
+                <p><b>Description</b>: Using the below buttons, please try adding a mixture of regular and autonomous 
+                    vehicles at different speeds in order to see how the flow of traffic changes. <u>What patterns do you 
+                    notice when using the different types of vehicles?</u></p>
             </div>
             <div class="col-md-2"></div>
         </div>
@@ -202,7 +203,9 @@
                         let pairs = event.pairs;
                         for (const pair of pairs) {
                             if (pair.bodyB === this._body) {
-                                if (Vehicle.getTypes().includes(pair.bodyA.label) && this._body.label === Vehicle.AUTONOMOUS) {
+                                if (Vehicle.getTypes().includes(pair.bodyA.label) && this._body.label === Vehicle.REGULAR) {
+                                    Matter.Body.setVelocity(this._body, { x: this._getSpeed(), y: 0 });
+                                } else if (Vehicle.getTypes().includes(pair.bodyA.label) && this._body.label === Vehicle.AUTONOMOUS) {
                                     Matter.Body.setVelocity(this._body, { x: 1, y: 0 });
                                     setTimeout(() => { Matter.Body.setVelocity(this._body, pair.bodyA.velocity); }, 500);
                                 // Collusion rules for completing a lap
@@ -223,11 +226,6 @@
                                 } else if (pair.bodyA.label === 'third-lap') {
                                     Matter.Composite.remove(engine.world, this._body);
                                 }
-                                // ** HACK ** After collusion, previous `beforeUpdate` event doesn't run?!
-                                // Source: https://github.com/liabru/matter-js/issues/256
-                                // for (let i = 0; i < 100; i++) {
-                                //     Matter.Engine.update(engine, 1);
-                                // }
                             }
                         }
                     });
@@ -301,12 +299,6 @@
                 _updatePosition = (position, velocity) => {
                     Matter.Body.setPosition(this._body, position);
                     Matter.Engine.update(engine);
-                    //Matter.Body.setVelocity(this._body, velocity);
-                    // ** HACK ** After collusion, previous `beforeUpdate` event doesn't run?!
-                    // Source: https://github.com/liabru/matter-js/issues/256
-                    //for (let i = 0; i < 10; i++) {
-                    //   Matter.Engine.update(engine, 1);
-                    //}
                 };
             }
 
