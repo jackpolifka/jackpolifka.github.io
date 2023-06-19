@@ -32,6 +32,11 @@
             text-decoration: underline;
         }
 
+        .btn:disabled {
+            cursor: not-allowed;
+            pointer-events: all !important;
+        }
+
         .btn-pink {
             color: #FFC0CB;
             background-color: #8e404d;
@@ -85,9 +90,9 @@
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-8">
-                <p><b>Description</b>: Please try adding a mixture of regular and autonomous (AI) vehicles at different 
-                    speeds in order to see how the flow of traffic changes. <u>What patterns do you notice when using 
-                    the different types of vehicles?</u></p>
+                <p><b>Description</b>: Please try adding a mixture of regular and autonomous (AI) vehicles at different
+                    speeds in order to see how the flow of traffic changes. <u>What patterns do you notice when using
+                        the different types of vehicles?</u></p>
             </div>
             <div class="col-md-2"></div>
         </div>
@@ -176,21 +181,21 @@
                         10,
                         10,
                         (simulatorTrackSettings.height * 2 - 10) / 3,
-                        {isStatic: true, label: 'first-lap', render: { visible: false }}
+                        { isStatic: true, label: 'first-lap', render: { visible: false } }
                     ),
                     Matter.Bodies.rectangle(
                         simulatorTrackSettings.width + 60,
                         300,
                         10,
                         simulatorTrackSettings.height / 3,
-                        {isStatic: true, label: 'second-lap', render: { visible: false }}
+                        { isStatic: true, label: 'second-lap', render: { visible: false } }
                     ),
                     Matter.Bodies.rectangle(
                         simulatorTrackSettings.width + 60,
                         500,
                         10,
                         simulatorTrackSettings.height / 3,
-                        {isStatic: true, label: 'third-lap', render: { visible: false }}
+                        { isStatic: true, label: 'third-lap', render: { visible: false } }
                     ),
                 ]
             );
@@ -208,15 +213,15 @@
                                 } else if (Vehicle.getTypes().includes(pair.bodyA.label) && this._body.label === Vehicle.AUTONOMOUS) {
                                     Matter.Body.setVelocity(this._body, { x: 1, y: 0 });
                                     setTimeout(() => { Matter.Body.setVelocity(this._body, pair.bodyA.velocity); }, 500);
-                                // Collusion rules for completing a lap
-                                // first lap
+                                    // Collusion rules for completing a lap
+                                    // first lap
                                 } else if (pair.bodyA.label === 'first-lap') {
                                     let secondLapStartPosition = { x: -40, y: 255 };
                                     if (pair.bodyB.lane === 1) {
                                         secondLapStartPosition = { x: -40, y: 345 };
                                     }
                                     this._updatePosition(secondLapStartPosition, this._body.velocity);
-                                // second lap
+                                    // second lap
                                 } else if (pair.bodyA.label === 'second-lap') {
                                     let thirdLapStartPosition = { x: -40, y: 465 };
                                     if (pair.bodyB.lane === 1) {
